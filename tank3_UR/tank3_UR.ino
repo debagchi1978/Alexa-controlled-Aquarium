@@ -1,6 +1,6 @@
 /*
- Version 1.1 - April 03 2018
-*/ 
+  Version 1.1 - April 03 2018
+*/
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -32,52 +32,52 @@ void setTargetTemperatureOnServer(String deviceId, String value, String scale);
 
 void turnOn(String deviceId) {
   if (deviceId == "5ad2f8d5c2bb4d1228e8b3e5") // Device ID of first device
-  {  
+  {
     Serial.print("Turn on device id: ");
     Serial.println(deviceId);
     digitalWrite(lightPin, LOW);
-  } 
+  }
   else if (deviceId == "5ad2f8edc2bb4d1228e8b3e6") // Device ID of second device
-  { 
+  {
     Serial.print("Turn on device id: ");
     Serial.println(deviceId);
     digitalWrite(filterPin, LOW);
   }
   else {
     Serial.print("Turn on for unknown device id: ");
-    Serial.println(deviceId);    
-  }     
+    Serial.println(deviceId);
+  }
 }
 
 void turnOff(String deviceId) {
-   if (deviceId == "5ad2f8d5c2bb4d1228e8b3e5") // Device ID of first device
-   {  
-     Serial.print("Turn off Device ID: ");
-     Serial.println(deviceId);
-     digitalWrite(lightPin, HIGH);
-   }
-   else if (deviceId == "5ad2f8edc2bb4d1228e8b3e6") // Device ID of second device
-   { 
-     Serial.print("Turn off Device ID: ");
-     Serial.println(deviceId);
-     digitalWrite(filterPin, HIGH);
+  if (deviceId == "5ad2f8d5c2bb4d1228e8b3e5") // Device ID of first device
+  {
+    Serial.print("Turn off Device ID: ");
+    Serial.println(deviceId);
+    digitalWrite(lightPin, HIGH);
+  }
+  else if (deviceId == "5ad2f8edc2bb4d1228e8b3e6") // Device ID of second device
+  {
+    Serial.print("Turn off Device ID: ");
+    Serial.println(deviceId);
+    digitalWrite(filterPin, HIGH);
   }
   else {
-     Serial.print("Turn off for unknown device id: ");
-     Serial.println(deviceId);    
+    Serial.print("Turn off for unknown device id: ");
+    Serial.println(deviceId);
   }
 }
 
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
-  switch(type) {
+  switch (type) {
     case WStype_DISCONNECTED:
-      isConnected = false;    
+      isConnected = false;
       Serial.printf("[WSc] Webservice disconnected from sinric.com!\n");
       break;
     case WStype_CONNECTED: {
-      isConnected = true;
-      Serial.printf("[WSc] Service connected to sinric.com at url: %s\n", payload);
-      Serial.printf("Waiting for commands from sinric.com ...\n");        
+        isConnected = true;
+        Serial.printf("[WSc] Service connected to sinric.com at url: %s\n", payload);
+        Serial.printf("Waiting for commands from sinric.com ...\n");
       }
       break;
     case WStype_TEXT: {
@@ -89,27 +89,27 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
 
         // For Light device type
         // Look at the light example in github
-          
+
         DynamicJsonBuffer jsonBuffer;
-        JsonObject& json = jsonBuffer.parseObject((char*)payload); 
-        String deviceId = json ["deviceId"];     
+        JsonObject& json = jsonBuffer.parseObject((char*)payload);
+        String deviceId = json ["deviceId"];
         String action = json ["action"];
-        
-        if(action == "setPowerState") { // Switch or Light
-            String value = json ["value"];
-            if(value == "ON") {
-                turnOn(deviceId);
-            } else {
-                turnOff(deviceId);
-            }
+
+        if (action == "setPowerState") { // Switch or Light
+          String value = json ["value"];
+          if (value == "ON") {
+            turnOn(deviceId);
+          } else {
+            turnOff(deviceId);
+          }
         }
         else if (action == "SetTargetTemperature") {
-            String deviceId = json ["deviceId"];     
-            String action = json ["action"];
-            String value = json ["value"];
+          String deviceId = json ["deviceId"];
+          String action = json ["action"];
+          String value = json ["value"];
         }
         else if (action == "test") {
-            Serial.println("[WSc] received test command from sinric.com");
+          Serial.println("[WSc] received test command from sinric.com");
         }
       }
       break;
@@ -128,32 +128,31 @@ void setup() {
 
   pinMode(statusPin, OUTPUT);
   digitalWrite(statusPin, LOW);
-  
 
-  pinMode(filterPin, OUTPUT);  
+
+  pinMode(filterPin, OUTPUT);
   digitalWrite(filterPin, HIGH);
-  
+
   WiFiMulti.addAP(MySSID, MyWifiPassword);
   Serial.println();
   Serial.print("Connecting to Wifi: ");
-  Serial.println(MySSID);  
+  Serial.println(MySSID);
 
   // Waiting for Wifi connect
-  while(WiFiMulti.run() != WL_CONNECTED) {
+  while (WiFiMulti.run() != WL_CONNECTED) {
     digitalWrite(statusPin, LOW);
     delay(250);
     digitalWrite(statusPin, HIGH);
     delay(250);
-    
+
     //delay(500);
     Serial.print(".");
   }
-  if(WiFiMulti.run() == WL_CONNECTED) {
+  if (WiFiMulti.run() == WL_CONNECTED) {
     Serial.println("");
     Serial.print("WiFi connected. ");
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
-    digitalWrite(statusPin, HIGH);
   }
 
   // server address, port and URL
@@ -162,23 +161,27 @@ void setup() {
   // event handler
   webSocket.onEvent(webSocketEvent);
   webSocket.setAuthorization("apikey", MyApiKey);
-  
+
   // try again every 5000ms if connection has failed
   webSocket.setReconnectInterval(5000);   // If you see 'class WebSocketsClient' has no member named 'setReconnectInterval' error update arduinoWebSockets
 }
 
-void loop() {
-  webSocket.loop();
-  
-  if(isConnected) {
-      uint64_t now = millis();
-      
-      // Send heartbeat in order to avoid disconnections during ISP resetting IPs over night. Thanks @MacSass
-      if((now - heartbeatTimestamp) > HEARTBEAT_INTERVAL) {
-          heartbeatTimestamp = now;
-          webSocket.sendTXT("H");          
-      }
-  }   
+void loop() {    
+ webSocket.loop();
+
+  if (isConnected) {
+        
+    uint64_t now = millis();
+
+    // Send heartbeat in order to avoid disconnections during ISP resetting IPs over night. Thanks @MacSass
+    if ((now - heartbeatTimestamp) > HEARTBEAT_INTERVAL) {
+      heartbeatTimestamp = now;
+      webSocket.sendTXT("H");
+    }    
+    
+  } else {
+    digitalWrite(statusPin, HIGH);
+  }
 }
 
 // If you are going to use a push button to on/off the switch manually, use this function to update the status on the server
@@ -192,7 +195,7 @@ void setPowerStateOnServer(String deviceId, String value) {
   root["value"] = value;
   StreamString databuf;
   root.printTo(databuf);
-  
+
   webSocket.sendTXT(databuf);
 }
 
@@ -202,14 +205,14 @@ void setTargetTemperatureOnServer(String deviceId, String value, String scale) {
   JsonObject& root = jsonBuffer.createObject();
   root["action"] = "SetTargetTemperature";
   root["deviceId"] = deviceId;
-  
+
   JsonObject& valueObj = root.createNestedObject("value");
   JsonObject& targetSetpoint = valueObj.createNestedObject("targetSetpoint");
   targetSetpoint["value"] = value;
   targetSetpoint["scale"] = scale;
-   
+
   StreamString databuf;
   root.printTo(databuf);
-  
+
   webSocket.sendTXT(databuf);
 }
