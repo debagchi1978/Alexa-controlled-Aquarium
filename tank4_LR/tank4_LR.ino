@@ -17,7 +17,7 @@ WiFiClient client;
 #define MySSID "debagchi81a" // TODO: Change to your Wifi network SSID
 #define MyWifiPassword "Sep@2017Deb" // TODO: Change to your Wifi network password
 
-#define lightPin D3
+#define lightPin D2
 //#define filterPin D3
 #define statusPin D4
 
